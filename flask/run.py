@@ -5,33 +5,66 @@ sys.setdefaultencoding('utf-8')
 
 from flask import Flask
 from flask import url_for
+from flask import render_template
+from flask import request
+from flask import make_response
+from flask import redirect
+from flask.ext.script import Manager   #python-srcipy
+from flask.ext.bootstrap import Bootstrap
 
 app=Flask(__name__)
 
+bootstrap=Bootstrap(app)
+
+@app.route("/index")
 @app.route("/")
 def index():
-	return "<h1>test page<h1>"
+	user={'nickname':'Migurel'}
+	posts=[
+	{
+	'author':{'nickname':'Johe'},
+	'body':'Beautiful day in Protland!'
+	},
+	{
+	'author':{'nickname':'Susan'},
+	'body':'The Avengers movie was so cool!'
+	}
+	]
+	return render_template('index.html',
+		title='Home',
+		user=user,
+		posts=posts)
 
-@app.route("/login", methods=['GET','POST'])
-def login():
-	if request.method == 'POST':
-		do_the_login()
-	else:
-		show_the_login_form()
+@app.route("/hello/")
+@app.route('/hello/<name>')
+def hello(name=None):
+	return render_template('hello.html',name=name)
 
-@app.route("/<username>")
-def show_user_profile(username):
-	return '<h1>use %s</h1>' %username
+# 返回用户的user_agent信息
+@app.route("/useragent")
+def useragent():
+    user_agent=request.headers.get('User_Agent')
+    return '<p>Your browser is %s</p>' %user_agent
 
-@app.route("/<int:post_id>")
-def show_post(post_id):
-	return "<h1>post %d</h1>" %post_id
+# 设置cookie
+@app.route("/cookie")
+def cookie():
+    response=make_response('<h1>This document carries a cookie!</h1>')
+    response.set_cookie('answer','42')
+    return response
 
-# url构建
-with app.test_request_context():
-	print url_for('index')
-	print url_for('show_user_profile',username='John Doe')
-	print url_for('login',next='/')
+# 页面重定向
+@app.route('/xilai')
+def xilai():
+    return redirect("http://www.xilaikd.com")
+# 错误重定向
+@app.route('/user/<id>')
+def get_user(id):
+    user=['jerry','tom','jack','marry']
+    if id not in user:
+        return '<h1>error:404</h1>'
+    return '<h1>Hello,%s</h1>' %id
+
 
 
 app.debug=True
